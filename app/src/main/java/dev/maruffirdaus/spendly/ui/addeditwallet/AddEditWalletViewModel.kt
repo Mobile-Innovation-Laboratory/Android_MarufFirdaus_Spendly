@@ -40,33 +40,35 @@ class AddEditWalletViewModel @Inject constructor(
         when (event) {
             is AddEditWalletEvent.OnSaveWallet -> {
                 viewModelScope.launch {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = true
-                        )
-                    }
-                    addEditWalletUseCase(
-                        Wallet(
-                            title = uiState.value.title,
-                            currency = uiState.value.currency,
-                            balance = uiState.value.balance.toLong(),
-                            walletId = event.walletId ?: Uuid.random().toString()
-                        )
-                    )
-
-                    if (isConnected.value) {
-                        val user = getUserUseCase()
-
-                        if (user != null && getDataSyncEnabledUseCase()) {
-                            syncWalletsUseCase(user.userId)
+                    isConnected.collect { connected ->
+                        _uiState.update {
+                            it.copy(
+                                isLoading = true
+                            )
                         }
-                    }
-
-                    event.onSuccess?.invoke()
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false
+                        addEditWalletUseCase(
+                            Wallet(
+                                title = uiState.value.title,
+                                currency = uiState.value.currency,
+                                balance = uiState.value.balance.toLong(),
+                                walletId = event.walletId ?: Uuid.random().toString()
+                            )
                         )
+
+                        if (connected) {
+                            val user = getUserUseCase()
+
+                            if (user != null && getDataSyncEnabledUseCase()) {
+                                syncWalletsUseCase(user.userId)
+                            }
+                        }
+
+                        event.onSuccess?.invoke()
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false
+                            )
+                        }
                     }
                 }
             }

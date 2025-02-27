@@ -190,52 +190,56 @@ class ActivitiesViewModel @Inject constructor(
 
             is ActivitiesEvent.OnRefreshCategories -> {
                 viewModelScope.launch {
-                    if (isConnected.value) {
-                        val user = getUserUseCase()
+                    isConnected.collect { connected ->
+                        if (connected) {
+                            val user = getUserUseCase()
 
-                        if (user != null && getDataSyncEnabledUseCase()) {
-                            syncCategoriesUseCase(user.userId)
+                            if (user != null && getDataSyncEnabledUseCase()) {
+                                syncCategoriesUseCase(user.userId)
+                            }
                         }
-                    }
 
-                    _uiState.update {
-                        it.copy(
-                            categories = getCategoriesUseCase()
-                        )
+                        _uiState.update {
+                            it.copy(
+                                categories = getCategoriesUseCase()
+                            )
+                        }
                     }
                 }
             }
 
             is ActivitiesEvent.OnRefreshActivities -> {
                 viewModelScope.launch {
-                    _uiState.update {
-                        it.copy(
-                            isActivitiesLoading = true
-                        )
-                    }
-
-                    if (isConnected.value) {
-                        val user = getUserUseCase()
-
-                        if (user != null && getDataSyncEnabledUseCase()) {
-                            syncWalletsUseCase(user.userId)
-                            syncCategoriesUseCase(user.userId)
-                            syncActivitiesUseCase(user.userId)
+                    isConnected.collect { connected ->
+                        _uiState.update {
+                            it.copy(
+                                isActivitiesLoading = true
+                            )
                         }
-                    }
 
-                    val activities = getActivitiesUseCase(
-                        walletId = event.walletId,
-                        categoryId = uiState.value.selectedCategoryId,
-                        year = event.year,
-                        month = uiState.value.selectedMonthFilter.id
-                    )
+                        if (connected) {
+                            val user = getUserUseCase()
 
-                    _uiState.update {
-                        it.copy(
-                            activities = activities,
-                            isActivitiesLoading = false
+                            if (user != null && getDataSyncEnabledUseCase()) {
+                                syncWalletsUseCase(user.userId)
+                                syncCategoriesUseCase(user.userId)
+                                syncActivitiesUseCase(user.userId)
+                            }
+                        }
+
+                        val activities = getActivitiesUseCase(
+                            walletId = event.walletId,
+                            categoryId = uiState.value.selectedCategoryId,
+                            year = event.year,
+                            month = uiState.value.selectedMonthFilter.id
                         )
+
+                        _uiState.update {
+                            it.copy(
+                                activities = activities,
+                                isActivitiesLoading = false
+                            )
+                        }
                     }
                 }
             }

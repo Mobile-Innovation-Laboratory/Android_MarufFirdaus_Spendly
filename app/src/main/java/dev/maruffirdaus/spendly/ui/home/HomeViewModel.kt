@@ -86,47 +86,49 @@ class HomeViewModel @Inject constructor(
 
             is HomeEvent.OnRefreshGraphData -> {
                 viewModelScope.launch {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = true
-                        )
-                    }
-
-                    if (isConnected.value) {
-                        val user = getUserUseCase()
-
-                        if (user != null && getDataSyncEnabledUseCase()) {
-                            syncWalletsUseCase(user.userId)
-                            syncCategoriesUseCase(user.userId)
-                            syncActivitiesUseCase(user.userId)
+                    isConnected.collect { connected ->
+                        _uiState.update {
+                            it.copy(
+                                isLoading = true
+                            )
                         }
-                    }
 
-                    val incomeData: MutableList<Long> = emptyList<Long>().toMutableList()
-                    val expenseData: MutableList<Long> = emptyList<Long>().toMutableList()
+                        if (connected) {
+                            val user = getUserUseCase()
 
-                    Months.entries.forEach { month ->
-                        incomeData += getActivitiesUseCase(
-                            walletId = event.walletId,
-                            categoryId = null,
-                            year = event.year,
-                            month = month.id
-                        ).filter { 0 < it.amount }.sumOf { it.amount }
+                            if (user != null && getDataSyncEnabledUseCase()) {
+                                syncWalletsUseCase(user.userId)
+                                syncCategoriesUseCase(user.userId)
+                                syncActivitiesUseCase(user.userId)
+                            }
+                        }
 
-                        expenseData += getActivitiesUseCase(
-                            walletId = event.walletId,
-                            categoryId = null,
-                            year = event.year,
-                            month = month.id
-                        ).filter { it.amount < 0 }.sumOf { it.amount * -1 }
-                    }
+                        val incomeData: MutableList<Long> = emptyList<Long>().toMutableList()
+                        val expenseData: MutableList<Long> = emptyList<Long>().toMutableList()
 
-                    _uiState.update {
-                        it.copy(
-                            incomeData = incomeData,
-                            expenseData = expenseData,
-                            isLoading = false
-                        )
+                        Months.entries.forEach { month ->
+                            incomeData += getActivitiesUseCase(
+                                walletId = event.walletId,
+                                categoryId = null,
+                                year = event.year,
+                                month = month.id
+                            ).filter { 0 < it.amount }.sumOf { it.amount }
+
+                            expenseData += getActivitiesUseCase(
+                                walletId = event.walletId,
+                                categoryId = null,
+                                year = event.year,
+                                month = month.id
+                            ).filter { it.amount < 0 }.sumOf { it.amount * -1 }
+                        }
+
+                        _uiState.update {
+                            it.copy(
+                                incomeData = incomeData,
+                                expenseData = expenseData,
+                                isLoading = false
+                            )
+                        }
                     }
                 }
             }

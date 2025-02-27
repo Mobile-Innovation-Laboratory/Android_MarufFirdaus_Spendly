@@ -74,27 +74,29 @@ class MainViewModel @Inject constructor(
 
             is MainEvent.OnRefreshWallets -> {
                 viewModelScope.launch {
-                    _uiState.update {
-                        it.copy(
-                            isWalletsLoading = true
-                        )
-                    }
-
-                    if (isConnected.value) {
-                        val user = getUserUseCase()
-
-                        if (user != null && getDataSyncEnabledUseCase()) {
-                            syncWalletsUseCase(user.userId)
+                    isConnected.collect { connected ->
+                        _uiState.update {
+                            it.copy(
+                                isWalletsLoading = true
+                            )
                         }
-                    }
 
-                    val wallets = getWalletsUseCase()
+                        if (connected) {
+                            val user = getUserUseCase()
 
-                    _uiState.update {
-                        it.copy(
-                            wallets = wallets,
-                            isWalletsLoading = false
-                        )
+                            if (user != null && getDataSyncEnabledUseCase()) {
+                                syncWalletsUseCase(user.userId)
+                            }
+                        }
+
+                        val wallets = getWalletsUseCase()
+
+                        _uiState.update {
+                            it.copy(
+                                wallets = wallets,
+                                isWalletsLoading = false
+                            )
+                        }
                     }
                 }
             }

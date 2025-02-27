@@ -51,41 +51,43 @@ class AddEditActivityViewModel @Inject constructor(
         when (event) {
             is AddEditActivityEvent.OnSaveActivity -> {
                 viewModelScope.launch {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = true
-                        )
-                    }
-                    addEditActivityUseCase(
-                        Activity(
-                            walletId = event.walletId,
-                            title = uiState.value.title,
-                            date = getDateFromMillis(uiState.value.date),
-                            amount = uiState.value.amount.toLong().let {
-                                if (uiState.value.activityType == ActivityTypes.EXPENSE) {
-                                    it * -1
-                                } else {
-                                    it
-                                }
-                            },
-                            activityId = event.activityId ?: Uuid.random().toString(),
-                            categoryId = uiState.value.selectedCategoryId
-                        )
-                    )
-
-                    if (isConnected.value) {
-                        val user = getUserUseCase()
-
-                        if (user != null && getDataSyncEnabledUseCase()) {
-                            syncActivitiesUseCase(user.userId)
+                    isConnected.collect { connected ->
+                        _uiState.update {
+                            it.copy(
+                                isLoading = true
+                            )
                         }
-                    }
-
-                    event.onSuccess?.invoke()
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false
+                        addEditActivityUseCase(
+                            Activity(
+                                walletId = event.walletId,
+                                title = uiState.value.title,
+                                date = getDateFromMillis(uiState.value.date),
+                                amount = uiState.value.amount.toLong().let {
+                                    if (uiState.value.activityType == ActivityTypes.EXPENSE) {
+                                        it * -1
+                                    } else {
+                                        it
+                                    }
+                                },
+                                activityId = event.activityId ?: Uuid.random().toString(),
+                                categoryId = uiState.value.selectedCategoryId
+                            )
                         )
+
+                        if (connected) {
+                            val user = getUserUseCase()
+
+                            if (user != null && getDataSyncEnabledUseCase()) {
+                                syncActivitiesUseCase(user.userId)
+                            }
+                        }
+
+                        event.onSuccess?.invoke()
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false
+                            )
+                        }
                     }
                 }
             }
@@ -252,27 +254,29 @@ class AddEditActivityViewModel @Inject constructor(
 
             is AddEditActivityEvent.OnRefreshCategories -> {
                 viewModelScope.launch {
-                    _uiState.update {
-                        it.copy(
-                            isLoading = true
-                        )
-                    }
-
-                    if (isConnected.value) {
-                        val user = getUserUseCase()
-
-                        if (user != null && getDataSyncEnabledUseCase()) {
-                            syncCategoriesUseCase(user.userId)
+                    isConnected.collect { connected ->
+                        _uiState.update {
+                            it.copy(
+                                isLoading = true
+                            )
                         }
-                    }
 
-                    val categories = getCategoriesUseCase()
+                        if (connected) {
+                            val user = getUserUseCase()
 
-                    _uiState.update {
-                        it.copy(
-                            categories = categories,
-                            isLoading = false
-                        )
+                            if (user != null && getDataSyncEnabledUseCase()) {
+                                syncCategoriesUseCase(user.userId)
+                            }
+                        }
+
+                        val categories = getCategoriesUseCase()
+
+                        _uiState.update {
+                            it.copy(
+                                categories = categories,
+                                isLoading = false
+                            )
+                        }
                     }
                 }
             }
