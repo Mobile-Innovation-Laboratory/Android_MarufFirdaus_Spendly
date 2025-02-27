@@ -13,6 +13,7 @@ import dev.maruffirdaus.spendly.ui.util.ConnectivityObserver
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -40,35 +41,33 @@ class AddEditWalletViewModel @Inject constructor(
         when (event) {
             is AddEditWalletEvent.OnSaveWallet -> {
                 viewModelScope.launch {
-                    isConnected.collect { connected ->
-                        _uiState.update {
-                            it.copy(
-                                isLoading = true
-                            )
-                        }
-                        addEditWalletUseCase(
-                            Wallet(
-                                title = uiState.value.title,
-                                currency = uiState.value.currency,
-                                balance = uiState.value.balance.toLong(),
-                                walletId = event.walletId ?: Uuid.random().toString()
-                            )
+                    _uiState.update {
+                        it.copy(
+                            isLoading = true
                         )
+                    }
+                    addEditWalletUseCase(
+                        Wallet(
+                            title = uiState.value.title,
+                            currency = uiState.value.currency,
+                            balance = uiState.value.balance.toLong(),
+                            walletId = event.walletId ?: Uuid.random().toString()
+                        )
+                    )
 
-                        if (connected) {
-                            val user = getUserUseCase()
+                    if (isConnected.first()) {
+                        val user = getUserUseCase()
 
-                            if (user != null && getDataSyncEnabledUseCase()) {
-                                syncWalletsUseCase(user.userId)
-                            }
+                        if (user != null && getDataSyncEnabledUseCase()) {
+                            syncWalletsUseCase(user.userId)
                         }
+                    }
 
-                        event.onSuccess?.invoke()
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false
-                            )
-                        }
+                    event.onSuccess?.invoke()
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false
+                        )
                     }
                 }
             }

@@ -15,6 +15,7 @@ import dev.maruffirdaus.spendly.ui.util.ConnectivityObserver
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -86,49 +87,47 @@ class HomeViewModel @Inject constructor(
 
             is HomeEvent.OnRefreshGraphData -> {
                 viewModelScope.launch {
-                    isConnected.collect { connected ->
-                        _uiState.update {
-                            it.copy(
-                                isLoading = true
-                            )
+                    _uiState.update {
+                        it.copy(
+                            isLoading = true
+                        )
+                    }
+
+                    if (isConnected.first()) {
+                        val user = getUserUseCase()
+
+                        if (user != null && getDataSyncEnabledUseCase()) {
+                            syncWalletsUseCase(user.userId)
+                            syncCategoriesUseCase(user.userId)
+                            syncActivitiesUseCase(user.userId)
                         }
+                    }
 
-                        if (connected) {
-                            val user = getUserUseCase()
+                    val incomeData: MutableList<Long> = emptyList<Long>().toMutableList()
+                    val expenseData: MutableList<Long> = emptyList<Long>().toMutableList()
 
-                            if (user != null && getDataSyncEnabledUseCase()) {
-                                syncWalletsUseCase(user.userId)
-                                syncCategoriesUseCase(user.userId)
-                                syncActivitiesUseCase(user.userId)
-                            }
-                        }
+                    Months.entries.forEach { month ->
+                        incomeData += getActivitiesUseCase(
+                            walletId = event.walletId,
+                            categoryId = null,
+                            year = event.year,
+                            month = month.id
+                        ).filter { 0 < it.amount }.sumOf { it.amount }
 
-                        val incomeData: MutableList<Long> = emptyList<Long>().toMutableList()
-                        val expenseData: MutableList<Long> = emptyList<Long>().toMutableList()
+                        expenseData += getActivitiesUseCase(
+                            walletId = event.walletId,
+                            categoryId = null,
+                            year = event.year,
+                            month = month.id
+                        ).filter { it.amount < 0 }.sumOf { it.amount * -1 }
+                    }
 
-                        Months.entries.forEach { month ->
-                            incomeData += getActivitiesUseCase(
-                                walletId = event.walletId,
-                                categoryId = null,
-                                year = event.year,
-                                month = month.id
-                            ).filter { 0 < it.amount }.sumOf { it.amount }
-
-                            expenseData += getActivitiesUseCase(
-                                walletId = event.walletId,
-                                categoryId = null,
-                                year = event.year,
-                                month = month.id
-                            ).filter { it.amount < 0 }.sumOf { it.amount * -1 }
-                        }
-
-                        _uiState.update {
-                            it.copy(
-                                incomeData = incomeData,
-                                expenseData = expenseData,
-                                isLoading = false
-                            )
-                        }
+                    _uiState.update {
+                        it.copy(
+                            incomeData = incomeData,
+                            expenseData = expenseData,
+                            isLoading = false
+                        )
                     }
                 }
             }

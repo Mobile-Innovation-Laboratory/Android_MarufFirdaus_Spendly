@@ -18,6 +18,7 @@ import dev.maruffirdaus.spendly.ui.util.ConnectivityObserver
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -190,56 +191,52 @@ class ActivitiesViewModel @Inject constructor(
 
             is ActivitiesEvent.OnRefreshCategories -> {
                 viewModelScope.launch {
-                    isConnected.collect { connected ->
-                        if (connected) {
-                            val user = getUserUseCase()
+                    if (isConnected.first()) {
+                        val user = getUserUseCase()
 
-                            if (user != null && getDataSyncEnabledUseCase()) {
-                                syncCategoriesUseCase(user.userId)
-                            }
+                        if (user != null && getDataSyncEnabledUseCase()) {
+                            syncCategoriesUseCase(user.userId)
                         }
+                    }
 
-                        _uiState.update {
-                            it.copy(
-                                categories = getCategoriesUseCase()
-                            )
-                        }
+                    _uiState.update {
+                        it.copy(
+                            categories = getCategoriesUseCase()
+                        )
                     }
                 }
             }
 
             is ActivitiesEvent.OnRefreshActivities -> {
                 viewModelScope.launch {
-                    isConnected.collect { connected ->
-                        _uiState.update {
-                            it.copy(
-                                isActivitiesLoading = true
-                            )
-                        }
-
-                        if (connected) {
-                            val user = getUserUseCase()
-
-                            if (user != null && getDataSyncEnabledUseCase()) {
-                                syncWalletsUseCase(user.userId)
-                                syncCategoriesUseCase(user.userId)
-                                syncActivitiesUseCase(user.userId)
-                            }
-                        }
-
-                        val activities = getActivitiesUseCase(
-                            walletId = event.walletId,
-                            categoryId = uiState.value.selectedCategoryId,
-                            year = event.year,
-                            month = uiState.value.selectedMonthFilter.id
+                    _uiState.update {
+                        it.copy(
+                            isActivitiesLoading = true
                         )
+                    }
 
-                        _uiState.update {
-                            it.copy(
-                                activities = activities,
-                                isActivitiesLoading = false
-                            )
+                    if (isConnected.first()) {
+                        val user = getUserUseCase()
+
+                        if (user != null && getDataSyncEnabledUseCase()) {
+                            syncWalletsUseCase(user.userId)
+                            syncCategoriesUseCase(user.userId)
+                            syncActivitiesUseCase(user.userId)
                         }
+                    }
+
+                    val activities = getActivitiesUseCase(
+                        walletId = event.walletId,
+                        categoryId = uiState.value.selectedCategoryId,
+                        year = event.year,
+                        month = uiState.value.selectedMonthFilter.id
+                    )
+
+                    _uiState.update {
+                        it.copy(
+                            activities = activities,
+                            isActivitiesLoading = false
+                        )
                     }
                 }
             }

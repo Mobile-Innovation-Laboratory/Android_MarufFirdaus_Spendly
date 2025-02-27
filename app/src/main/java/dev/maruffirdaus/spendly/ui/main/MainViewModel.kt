@@ -11,6 +11,7 @@ import dev.maruffirdaus.spendly.ui.util.ConnectivityObserver
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -74,29 +75,27 @@ class MainViewModel @Inject constructor(
 
             is MainEvent.OnRefreshWallets -> {
                 viewModelScope.launch {
-                    isConnected.collect { connected ->
-                        _uiState.update {
-                            it.copy(
-                                isWalletsLoading = true
-                            )
+                    _uiState.update {
+                        it.copy(
+                            isWalletsLoading = true
+                        )
+                    }
+
+                    if (isConnected.first()) {
+                        val user = getUserUseCase()
+
+                        if (user != null && getDataSyncEnabledUseCase()) {
+                            syncWalletsUseCase(user.userId)
                         }
+                    }
 
-                        if (connected) {
-                            val user = getUserUseCase()
+                    val wallets = getWalletsUseCase()
 
-                            if (user != null && getDataSyncEnabledUseCase()) {
-                                syncWalletsUseCase(user.userId)
-                            }
-                        }
-
-                        val wallets = getWalletsUseCase()
-
-                        _uiState.update {
-                            it.copy(
-                                wallets = wallets,
-                                isWalletsLoading = false
-                            )
-                        }
+                    _uiState.update {
+                        it.copy(
+                            wallets = wallets,
+                            isWalletsLoading = false
+                        )
                     }
                 }
             }
