@@ -1,0 +1,119 @@
+<resources>
+    <string name="account">Account</string>
+    <string name="activities">Activities</string>
+    <string name="add_activity">Add activity</string>
+    <string name="add_category">Add category</string>
+    <string name="add_first_wallet_message">Start by creating your first wallet</string>
+    <string name="add_wallet">Add wallet</string>
+    <string name="all">All</string>
+    <string name="amount">Amount</string>
+    <string name="amount_input_error_message">Amount must be a valid number</string>
+    <string name="app_name" translatable="false">Spendly</string>
+    <string name="apr">Apr</string>
+    <string name="attribution_message">Data provided by %s</string>
+    <string name="aug">Aug</string>
+
+    <string name="back">Back</string>
+    <string name="balance">Balance</string>
+    <string name="balance_input_error_message">Balance must be a valid number</string>
+
+    <string name="cancel">Cancel</string>
+    <string name="category">Category</string>
+    <string name="close">Close</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="confirm_password_error_message">Passwords don\'t match</string>
+    <string name="currency">Currency</string>
+    <string name="customize">Customize</string>
+
+    <string name="data_sync">Data sync</string>
+    <string name="date">Date</string>
+    <string name="dec">Dec</string>
+    <string name="deals">Deals</string>
+    <string name="delete">Delete</string>
+    <string name="delete_activity">Delete activity</string>
+    <string name="delete_activity_message">This activity will be deleted</string>
+    <string name="delete_activity_title">Delete activity?</string>
+    <string name="delete_category">Delete category</string>
+    <string name="delete_category_message">This category will be deleted, but its related activities will remain</string>
+    <string name="delete_category_title">Delete category?</string>
+    <string name="delete_wallet">Delete wallet</string>
+    <string name="delete_wallet_error_message">The last wallet can\'t be deleted</string>
+    <string name="delete_wallet_message">This wallet and all of its activities will be deleted</string>
+    <string name="delete_wallet_title">Delete wallet?</string>
+    <string name="dont_have_an_account">Don\'t have an account?</string>
+
+    <string name="edit">Edit</string>
+    <string name="edit_activity">Edit activity</string>
+    <string name="edit_category">Edit category</string>
+    <string name="edit_wallet">Edit wallet</string>
+    <string name="email">Email</string>
+    <string name="email_error_message">Invalid email address</string>
+    <string name="empty_activity_list_message">There are no activities yet</string>
+    <string name="empty_deal_list_message">There are no deals yet</string>
+    <string name="enable_data_sync_message">Data sync will be enabled</string>
+    <string name="enable_data_sync_title">Enable data sync?</string>
+    <string name="enable_or_disable_data_sync">Enable or disable data sync</string>
+    <string name="epic_games" translatable="false">Epic Games Store</string>
+    <string name="expense">Expense</string>
+
+    <string name="feb">Feb</string>
+    <string name="fetch_deals_error_message">Can\'t load deals. Check your internet and try again</string>
+
+    <string name="gog" translatable="false">GOG.com</string>
+
+    <string name="home">Home</string>
+
+    <string name="income">Income</string>
+    <string name="itad" translatable="false">IsThereAnyDeal.com</string>
+
+    <string name="jan">Jan</string>
+    <string name="jul">Jul</string>
+    <string name="jun">Jun</string>
+
+    <string name="mar">Mar</string>
+    <string name="may">May</string>
+    <string name="menu">Menu</string>
+
+    <string name="next">Next</string>
+    <string name="no">No</string>
+    <string name="not_signed_in">Not signed in</string>
+    <string name="nov">Nov</string>
+
+    <string name="oct">Oct</string>
+    <string name="overview">Overview</string>
+
+    <string name="password">Password</string>
+    <string name="password_error_message">Use at least 8 characters</string>
+    <string name="prev">Prev</string>
+
+    <string name="refresh">Refresh</string>
+    <string name="reset">Reset</string>
+    <string name="restore_previous_data">Restore previous data</string>
+
+    <string name="save">Save</string>
+    <string name="select">Select</string>
+    <string name="select_year">Select year</string>
+    <string name="sep">Sep</string>
+    <string name="settings">Settings</string>
+    <string name="show_hide_password">Show/hide password</string>
+    <string name="sign_in">Sign in</string>
+    <string name="sign_in_message">Sign in to continue</string>
+    <string name="sign_out">Sign out</string>
+    <string name="sign_out_message">This account will be signed out</string>
+    <string name="sign_out_title">Sign out?</string>
+    <string name="sign_up">Sign up</string>
+    <string name="sign_up_message">Sign up to continue</string>
+    <string name="steam" translatable="false">Steam</string>
+
+    <string name="title">Title</string>
+    <string name="try_again">Try again</string>
+    <string name="type">Type</string>
+
+    <string name="wallet">Wallet</string>
+    <string name="wallets">Wallets</string>
+    <string name="welcome_message">Welcome to %s</string>
+
+    <string name="year">Year</string>
+    <string name="year_picker">Year picker</string>
+    <string name="yes">Yes</string>
+</resources>
