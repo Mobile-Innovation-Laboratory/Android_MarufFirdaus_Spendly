@@ -7,8 +7,11 @@ import dev.maruffirdaus.spendly.domain.usecase.auth.GetUserUseCase
 import dev.maruffirdaus.spendly.domain.usecase.preference.GetDataSyncEnabledUseCase
 import dev.maruffirdaus.spendly.domain.usecase.wallet.GetWalletsUseCase
 import dev.maruffirdaus.spendly.domain.usecase.wallet.SyncWalletsUseCase
+import dev.maruffirdaus.spendly.ui.util.ConnectivityObserver
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -18,10 +21,14 @@ class MainViewModel @Inject constructor(
     private val getUserUseCase: GetUserUseCase,
     private val getDataSyncEnabledUseCase: GetDataSyncEnabledUseCase,
     private val getWalletsUseCase: GetWalletsUseCase,
-    private val syncWalletsUseCase: SyncWalletsUseCase
+    private val syncWalletsUseCase: SyncWalletsUseCase,
+    connectivityObserver: ConnectivityObserver
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(MainUiState())
     val uiState = _uiState.asStateFlow()
+
+    private val isConnected = connectivityObserver.isConnected
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     fun onEvent(event: MainEvent) {
         when (event) {
@@ -73,10 +80,12 @@ class MainViewModel @Inject constructor(
                         )
                     }
 
-                    val user = getUserUseCase()
+                    if (isConnected.value) {
+                        val user = getUserUseCase()
 
-                    if (user != null && getDataSyncEnabledUseCase()) {
-                        syncWalletsUseCase(user.userId)
+                        if (user != null && getDataSyncEnabledUseCase()) {
+                            syncWalletsUseCase(user.userId)
+                        }
                     }
 
                     val wallets = getWalletsUseCase()

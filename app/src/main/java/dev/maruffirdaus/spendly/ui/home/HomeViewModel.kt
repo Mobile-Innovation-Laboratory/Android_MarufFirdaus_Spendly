@@ -11,8 +11,11 @@ import dev.maruffirdaus.spendly.domain.usecase.preference.GetDataSyncEnabledUseC
 import dev.maruffirdaus.spendly.domain.usecase.wallet.DeleteWalletUseCase
 import dev.maruffirdaus.spendly.domain.usecase.wallet.SyncWalletsUseCase
 import dev.maruffirdaus.spendly.ui.home.constant.Months
+import dev.maruffirdaus.spendly.ui.util.ConnectivityObserver
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -25,10 +28,14 @@ class HomeViewModel @Inject constructor(
     private val syncWalletsUseCase: SyncWalletsUseCase,
     private val syncCategoriesUseCase: SyncCategoriesUseCase,
     private val getActivitiesUseCase: GetActivitiesUseCase,
-    private val syncActivitiesUseCase: SyncActivitiesUseCase
+    private val syncActivitiesUseCase: SyncActivitiesUseCase,
+    connectivityObserver: ConnectivityObserver
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState = _uiState.asStateFlow()
+
+    private val isConnected = connectivityObserver.isConnected
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     fun onEvent(event: HomeEvent) {
         when (event) {
@@ -85,12 +92,14 @@ class HomeViewModel @Inject constructor(
                         )
                     }
 
-                    val user = getUserUseCase()
+                    if (isConnected.value) {
+                        val user = getUserUseCase()
 
-                    if (user != null && getDataSyncEnabledUseCase()) {
-                        syncWalletsUseCase(user.userId)
-                        syncCategoriesUseCase(user.userId)
-                        syncActivitiesUseCase(user.userId)
+                        if (user != null && getDataSyncEnabledUseCase()) {
+                            syncWalletsUseCase(user.userId)
+                            syncCategoriesUseCase(user.userId)
+                            syncActivitiesUseCase(user.userId)
+                        }
                     }
 
                     val incomeData: MutableList<Long> = emptyList<Long>().toMutableList()

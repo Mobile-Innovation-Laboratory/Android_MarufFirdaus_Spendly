@@ -14,10 +14,13 @@ import dev.maruffirdaus.spendly.domain.usecase.category.GetCategoriesUseCase
 import dev.maruffirdaus.spendly.domain.usecase.category.SyncCategoriesUseCase
 import dev.maruffirdaus.spendly.domain.usecase.preference.GetDataSyncEnabledUseCase
 import dev.maruffirdaus.spendly.ui.addeditactivity.constant.ActivityTypes
+import dev.maruffirdaus.spendly.ui.util.ConnectivityObserver
 import dev.maruffirdaus.spendly.ui.util.getDateFromMillis
 import dev.maruffirdaus.spendly.ui.util.getMillisFromDate
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -34,10 +37,14 @@ class AddEditActivityViewModel @Inject constructor(
     private val syncCategoriesUseCase: SyncCategoriesUseCase,
     private val addEditActivityUseCase: AddEditActivityUseCase,
     private val getActivityUseCase: GetActivityUseCase,
-    private val syncActivitiesUseCase: SyncActivitiesUseCase
+    private val syncActivitiesUseCase: SyncActivitiesUseCase,
+    connectivityObserver: ConnectivityObserver
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AddEditActivityUiState())
     val uiState = _uiState.asStateFlow()
+
+    private val isConnected = connectivityObserver.isConnected
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
 
     @OptIn(ExperimentalUuidApi::class)
     fun onEvent(event: AddEditActivityEvent) {
@@ -66,10 +73,12 @@ class AddEditActivityViewModel @Inject constructor(
                         )
                     )
 
-                    val user = getUserUseCase()
+                    if (isConnected.value) {
+                        val user = getUserUseCase()
 
-                    if (user != null && getDataSyncEnabledUseCase()) {
-                        syncActivitiesUseCase(user.userId)
+                        if (user != null && getDataSyncEnabledUseCase()) {
+                            syncActivitiesUseCase(user.userId)
+                        }
                     }
 
                     event.onSuccess?.invoke()
@@ -249,10 +258,12 @@ class AddEditActivityViewModel @Inject constructor(
                         )
                     }
 
-                    val user = getUserUseCase()
+                    if (isConnected.value) {
+                        val user = getUserUseCase()
 
-                    if (user != null && getDataSyncEnabledUseCase()) {
-                        syncCategoriesUseCase(user.userId)
+                        if (user != null && getDataSyncEnabledUseCase()) {
+                            syncCategoriesUseCase(user.userId)
+                        }
                     }
 
                     val categories = getCategoriesUseCase()
